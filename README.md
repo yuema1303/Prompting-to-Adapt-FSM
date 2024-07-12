@@ -26,4 +26,4 @@ parser.add_argument('--val_txt', type=str, default='../../data/Medical/Kvasir-SE
 ```
 python train.py --checkpoint ../segment-anything/checkpoints/sam_vit_h_4b8939.pth --model_type vit_h
 ```
-! Please note that the code verifies the policies every fixed `args.val_epoch` during training.
+! Please note that the code evaluates searched policies every `args.val_epoch` during training.
