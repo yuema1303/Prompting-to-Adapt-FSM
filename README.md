@@ -22,6 +22,11 @@ parser.add_argument('--label_dir', type=str, default='../../data/Medical/Kvasir-
 parser.add_argument('--train_txt', type=str, default='../../data/Medical/Kvasir-SEG/Kavsir_train@1_10.txt')
 parser.add_argument('--val_txt', type=str, default='../../data/Medical/Kvasir-SEG/Kavsir_val.txt')
 ```
+! Please pay attention to the file format of the dataset and modify it accordingly in `train.py`.
+```
+img_path = os.path.join(img_dir, img_name + ".jpg")
+label_path = os.path.join(label_dir, img_name + ".jpg")
+```
 ## Train
 ```
 python train.py --checkpoint ../segment-anything/checkpoints/sam_vit_h_4b8939.pth --model_type vit_h
