@@ -1,4 +1,4 @@
-# Prompting-to-Adapt-FSG
+# Prompting-to-Adapt-FSM
 ## Installation
 ### Environment
 This code was implemented with Python 3.10 and PyTorch 2.0.1. You can install all the requirements via:
