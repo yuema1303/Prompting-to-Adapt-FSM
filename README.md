@@ -13,7 +13,7 @@ pip install git+https://github.com/facebookresearch/segment-anything.git
 ```
 SAM Checkpoints:
 
-Download [model-checkpoints](https://github.com/facebookresearch/segment-anything) from SAM official repository provides links for downloading the trained model checkpoints.
+Download [model-checkpoints](https://github.com/facebookresearch/segment-anything) from SAM official repository.
 ## Dataset
 Set the path of images, masks, train-val splits in `config.py`. Take the [Kvasir-SEG](https://datasets.simula.no/kvasir-seg/) dataset as an example：
 ```
