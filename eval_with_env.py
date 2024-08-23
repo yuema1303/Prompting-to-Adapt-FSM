@@ -7,7 +7,8 @@ import numpy as np
 import cv2
 import gymnasium 
 import pdb
-from stable_baselines3 import A2C, PPO
+from stable_baselines3 import PPO
+from sb3_contrib import RecurrentPPO
 from stable_baselines3.common.env_checker import check_env
 from controller import Controller
 from augement_policy import Policy
@@ -136,36 +137,25 @@ def main(args):
 
     #del model # remove to demonstrate saving and loading
 
-    model = PPO.load("PPO_P2A_All_lr_0.001_timesteps_15000")
+    model = RecurrentPPO.load("RecurrentPPO_P2A_All_lr_0.0005_timesteps_25000")
 
     obs, info = env.reset()
     
     rewards_list = []
     info_list = []
-    
-    for i in range(img_stack.shape[0]):
-        env.reset()
-        obs = img_stack[i]
+    for i in range(100):
+        #pdb.set_trace()
+        obs, info = env.reset()
+        #obs = img_stack.astype(np.uint8)[i]
         action, _states = model.predict(obs)
         obs, rewards, terminated, truncated, info = env.step(action)
         rewards_list.append(rewards)
         info_list.append(info)
+        
+    print(np.mean(rewards_list))
     
     pdb.set_trace()
     ###################################
-    
-    rewards_list = []
-    info_list = []
-    
-    for i in range(img_stack.shape[0]):
-        env.reset()
-        obs = img_stack[i]
-        action, _states = model.predict(obs)
-        obs, rewards, terminated, truncated, info = env.step(action)
-        rewards_list.append(rewards)
-        info_list.append(info)
-    
-    pdb.set_trace()
     
 if __name__ == '__main__':
     args = get_args()

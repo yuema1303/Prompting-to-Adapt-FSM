@@ -117,20 +117,22 @@ def main(args):
         img = img.permute(2,0,1)
         img_resize = transform(img)
         img_stack[i] = img_resize.numpy().transpose(1,2,0)
+        img_stack = img_stack.astype(np.uint8)
         
         gt_mask = cv2.imread(label_path, cv2.IMREAD_GRAYSCALE)
         gt_mask = torch.from_numpy(gt_mask)
         gt_mask_resize = transform(gt_mask.unsqueeze(0))
         gt_mask_stack[i] = gt_mask_resize.squeeze().numpy()
+        gt_mask_stack = gt_mask_stack.astype(np.uint8)
     
     # Till now, prepare predictor, training_set stack, (Validation_set stack), gt_mask stack should be prepared and env set up for just once
     
     
-    env = Prompt2AdaptAll(ori_images_stack = img_stack.astype(np.uint8), 
-                         gt_mask_stack = gt_mask_stack.astype(np.uint8), 
+    env = Prompt2AdaptAll(ori_images_stack = img_stack, 
+                         gt_mask_stack = gt_mask_stack, 
                          predictor = predictor, 
                          device = device, 
-                         mode = "All",
+                         mode = "Single",
                          args = args)
     
     #pdb.set_trace()
@@ -143,8 +145,12 @@ def main(args):
     #observation, reward, terminated, truncated, info = env.step(action)
     
     check_env(env)
-
-    model = RecurrentPPO("CnnLstmPolicy", env, verbose=1, n_steps = args.n_steps, learning_rate = args.sb3_lr)
+    
+    if(args.sb3_checkpoint == None):
+        model = RecurrentPPO("CnnLstmPolicy", env, verbose=1, n_steps = args.n_steps, learning_rate = args.sb3_lr)
+    else:
+        model = RecurrentPPO.load(args.sb3_checkpoint, env)
+        
     model.set_logger(sb3_logger)
     model.learn(total_timesteps=args.total_timesteps)
     vec_env = model.get_env()
@@ -169,7 +175,7 @@ def main(args):
         info_list.append(info)
     
     
-    print("mean mIoU = ", np.mean(rewards))
+    print("mean mIoU = ", np.mean(rewards_list))
     pdb.set_trace()
     
     ###################################

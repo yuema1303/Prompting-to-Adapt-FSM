@@ -6,4 +6,7 @@
 # 使用指定的Python解释器（如果设置了python_path变量）或默认的Python解释器运行train.py
 # python_path变量仅在Python不在PATH环境变量中时需要
 # ${python_path:-python} 是一个默认值表达式，如果python_path未设置，则使用python
-python train_with_envAll_contrib.py --checkpoint ../segment-anything/checkpoints/sam_vit_h_4b8939.pth --model_type vit_h --sb3_lr 0.001 --total_timesteps 15000 --n_steps 128
+python train_with_envAll_contrib.py --checkpoint ./segment_anything/sam_vit_h_4b8939.pth --model_type vit_h --sb3_lr 0.001 --total_timesteps 50000 --n_steps 128 
+
+
+

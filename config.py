@@ -42,6 +42,8 @@ def get_args():
     parser.add_argument('--sb3_batchsize', type=int, default=64)
     parser.add_argument('--n_steps', type=int, default=512)
     parser.add_argument('--total_timesteps', type=int, default=50000)
+    parser.add_argument('--sb3_checkpoint', type=str, default=None)
+
 
     # SAM
     parser.add_argument(

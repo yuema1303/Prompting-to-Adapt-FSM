@@ -30,15 +30,11 @@ class Prompt2AdaptAll(gym.Env):
         #self.transform = transforms.Compose([transforms.Resize((1024,1024), interpolation = transforms.InterpolationMode.BICUBIC)])
         
     def _get_obs(self):
-        self._adapted_image = self._image_stack[self._random_int]
+        #self._adapted_image = self._image_stack[self._random_int]
         return self._adapted_image
     
     def _get_info(self):
         return self._policy_dict_info
-    
-    def get_best_policy_dict(self):
-        best_policy_dict = dict(zip(str(self._best_policy_list[0][0]) + str(self._best_policy_list[0][1]) + str(self._best_policy_list[0][2]), self._best_mIoU_list))
-        return best_policy_dict
     
     def reset(self, seed=None, options = None):
         # reset the seed self.np_random
@@ -70,19 +66,20 @@ class Prompt2AdaptAll(gym.Env):
         
         self._policy_dict = get_sub_policies(policy_id_list, magnitude_id_list, self.args)
         
-        if(self._mode == "All"):
-            for i in range(self.args.subpolicy_num):
-                op = self._policy_dict[i][0]['op']
-                #op_list.append(op)
-                magnitude = self._policy_dict[i][0]['magnitude']
-                #magnitude_list.append(magnitude)
-                op_magnitude_list.append(str(op) + " : " + str(magnitude))
+        for i in range(self.args.subpolicy_num):
+            op = self._policy_dict[i][0]['op']
+            #op_list.append(op)
+            magnitude = self._policy_dict[i][0]['magnitude']
+            #magnitude_list.append(magnitude)
+            op_magnitude_list.append(str(op) + " : " + str(magnitude))
 
             #if((len(op_list) != 3) | (len(magnitude_list) != 3)):
                 #pdb.set_trace()
 
-            self._policy_dict_info = dict(zip(self._policy_dict_wrapper, op_magnitude_list))
-
+        self._policy_dict_info = dict(zip(self._policy_dict_wrapper, op_magnitude_list))
+        
+        if(self._mode == "All"):
+            
             mIoU_list = []
 
             for i in range(self._image_stack.shape[0]):
@@ -113,14 +110,8 @@ class Prompt2AdaptAll(gym.Env):
             terminated = True
 
             reward = np.mean(mIoU_list)
-            if((len(self._best_mIoU_list) == self.args.save_policy_len) and (reward < self._best_mIoU_list[-1]) and (reward in self._best_mIoU_list)):
-                pass
-            else:
-                self._best_mIoU_list.append(reward)
-                self._best_policy_list.append(self._policy_dict)
-                self._best_mIoU_list, self._best_policy_list = update_record_env(self._best_mIoU_list, self._best_policy_list, self.args.save_policy_len)
-                
-        else:
+            
+        elif(self._mode == "Single"):
             self._adapted_image = self._image_stack[self._random_int]
             #self._policy_dict = [{0: {'op': 'contrast_down', 'magnitude': 8}}, {0: {'op': 'saturation_down', 'magnitude': 8}}, {0: {'op': 'gaussianBlur', 'magnitude': 2}}]
             #just for test
@@ -149,10 +140,21 @@ class Prompt2AdaptAll(gym.Env):
             reward = IoU_cost
 
             reward = reward.cpu().numpy().item()
+            
+            
         
         #pdb.set_trace()
+        else:
+            raise NameError("PleaseSetCorrectModeName")
+           
+        if((len(self._best_mIoU_list) == self.args.save_policy_len) and (reward < self._best_mIoU_list[-1]) and ( reward in self._best_mIoU_list)):
+            pass
+        else:
+            self._best_mIoU_list.append(reward)
+            self._best_policy_list.append(self._policy_dict)
+            self._best_mIoU_list, self._best_policy_list = update_record_env(self._best_mIoU_list, self._best_policy_list, self.args.save_policy_len)
         
-        observation = self._get_obs() #should be 10 adaptedd images
+        observation = self._get_obs() #should be 1 adaptedd images
         info = self._get_info() #should be 3 policies with magnitude
 
         return observation, reward, terminated, False, info
