@@ -48,7 +48,8 @@ def val_SAM(args, predictor, policy_dict, device, mode='train'):
         image = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         predictor.set_image(image)
         
-        input_point = forward_point_cv2(label_path)
+        mask = cv2.imread(label_path, cv2.IMREAD_GRAYSCALE)
+        input_point = forward_point_cv2(mask)
         input_label = np.array([1])
         
         masks, _, _ = predictor.predict(

@@ -263,3 +263,15 @@ def log(c,img):
     output = c * np.log(1.0 + img)
     output=np.uint8(output+0.5)
     return output
+
+def get_sub_policies(augment_id_list, magnitude_id_list, args):
+    policies = []
+    for n in range(args.subpolicy_num):    
+        sub_policy = {}
+        for i in range(args.op_num_pre_subpolicy): 
+            policy = {}
+            policy['op'] = args.augment_types[augment_id_list[n + i]]
+            policy['magnitude'] = args.magnitude_types[magnitude_id_list[n + i]]
+            sub_policy[i] = policy
+        policies.append(sub_policy)
+    return policies

@@ -6,8 +6,8 @@ def get_args():
     parser = argparse.ArgumentParser('Prompting_to_Adapt')
 
     # dataset
-    parser.add_argument('--img_dir', type=str, default='/dataset/Kvasir-SEG/images/')
-    parser.add_argument('--label_dir', type=str, default='/dataset/Kvasir-SEG/masks/')
+    parser.add_argument('--img_dir', type=str, default='./dataset/Kvasir-SEG/images/')
+    parser.add_argument('--label_dir', type=str, default='./dataset/Kvasir-SEG/masks/')
     parser.add_argument('--train_txt', type=str, default='./dataset/Kvasir-SEG/Kavsir_train@1_10.txt')
     parser.add_argument('--val_txt', type=str, default='./dataset/Kvasir-SEG/Kavsir_val.txt')
     
@@ -36,6 +36,12 @@ def get_args():
     parser.add_argument('--search_epochs', type=int, default=1500)  # 1500
     parser.add_argument('--save_policy_len', type=int, default=10)  # 1500
     parser.add_argument('--val_epoch', type=int, default=10)  # 1500
+    
+    #stable baseline 3
+    parser.add_argument('--sb3_lr', type=float, default=0.0005)
+    parser.add_argument('--sb3_batchsize', type=int, default=64)
+    parser.add_argument('--n_steps', type=int, default=512)
+    parser.add_argument('--total_timesteps', type=int, default=50000)
 
     # SAM
     parser.add_argument(

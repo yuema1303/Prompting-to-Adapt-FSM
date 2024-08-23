@@ -139,8 +139,8 @@ def get_point_random(gt_mask):
     
     return input_point
     
-def forward_point_cv2(gt_path):
-    mask = cv2.imread(gt_path, cv2.IMREAD_GRAYSCALE)
+def forward_point_cv2(mask):
+    #mask = cv2.imread(gt_path, cv2.IMREAD_GRAYSCALE)
     dist_transform = cv2.distanceTransform(mask, cv2.DIST_L2, 5)
 
     max_distance_position = np.unravel_index(np.argmax(dist_transform), dist_transform.shape)
@@ -171,3 +171,25 @@ def update_record(best_mIoU_record, best_p_dict, best_iter_record, len_save):
         best_iter_record = sort_best_iter_record
         
     return best_mIoU_record, best_p_dict, best_iter_record
+
+def update_record_env(best_mIoU_record, best_p_dict, len_save):
+    sort_best_mIoU_record = sorted(best_mIoU_record, reverse=True)
+    sorted_index = [i[0] for i in sorted(enumerate(best_mIoU_record), key=lambda x:x[1], reverse=True)]
+    
+    sort_best_p_dict = [0 for i in range(len(sorted_index))]
+    #sort_best_iter_record = [0 for i in range(len(sorted_index))]
+    
+    for i in range(len(sorted_index)):
+        sort_best_p_dict[i] = best_p_dict[sorted_index[i]]
+        #sort_best_iter_record[i] = best_iter_record[sorted_index[i]]
+
+    if len(sort_best_mIoU_record) > len_save:
+        best_mIoU_record = sort_best_mIoU_record[:len_save]
+        best_p_dict = sort_best_p_dict[:len_save]
+        #best_iter_record = sort_best_iter_record[:len_save]
+    else:
+        best_mIoU_record = sort_best_mIoU_record
+        best_p_dict = sort_best_p_dict
+        #best_iter_record = sort_best_iter_record
+        
+    return best_mIoU_record, best_p_dict
