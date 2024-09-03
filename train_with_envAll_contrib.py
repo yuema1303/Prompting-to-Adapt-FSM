@@ -17,6 +17,7 @@ from augement_policy import Policy
 from config import get_args
 from segment_anything import SamAutomaticMaskGenerator, sam_model_registry, SamPredictor
 from FT_utils import img_loader, forward_point_cv2, eval_gt_pred, update_record
+from PromptToAdapt import Prompt2Adapt
 from PromptToAdaptAll import Prompt2AdaptAll
 from datetime import datetime
 from logger import Logger
@@ -35,7 +36,7 @@ def main(args):
     sys.stderr = Logger(str(log_file_name))
     '''
     
-    model_name = "RecurrentPPO_P2A_All_" + "lr_" + str(args.sb3_lr) + "_timesteps_" + str(args.total_timesteps)
+    model_name = "PPOrecurrent18_P2A_All_" + "lr_" + str(args.sb3_lr) + "_timesteps_" + str(args.total_timesteps)
     #log_file_name = f"{model_name}.log"
     #sys.stdout = Logger(str(log_file_name))
     #sys.stderr = Logger(str(log_file_name))
@@ -147,7 +148,7 @@ def main(args):
     check_env(env)
     
     if(args.sb3_checkpoint == None):
-        model = RecurrentPPO("CnnLstmPolicy", env, verbose=1, n_steps = args.n_steps, learning_rate = args.sb3_lr)
+        model = RecurrentPPO("CnnLstmPolicy", env, verbose=1, n_steps = args.n_steps, learning_rate = args.sb3_lr, ent_coef = 0.01, clip_range = 0.2, vf_coef = 0.5)
     else:
         model = RecurrentPPO.load(args.sb3_checkpoint, env)
         
@@ -158,6 +159,85 @@ def main(args):
     print(mean_reward)
     #model_name = "PPO_P2A_" + "lr_" + str(args.sb3_lr) + "_timesteps_" + str(args.total_timesteps)
     model.save(model_name)
+    
+    print("Test 10 best policies' performance on validation set")
+    
+    mode = "val"
+    
+    if mode == 'train':
+        ann_file = open(train_txt, "r")
+    elif mode == 'val':
+        ann_file = open(val_txt, "r")
+    else:
+        ann_file = open(val_txt, "r")
+    content = ann_file.read()
+    imgs_list = content.splitlines()
+
+    #pdb.set_trace()
+    img_stack = np.zeros((120,1024,1024,3))
+    gt_mask_stack = np.zeros((120,1024,1024))
+
+    for i in range(len(imgs_list)):
+        
+        img_name = imgs_list[i].split(".")[0]
+        img_path = os.path.join(img_dir, img_name + ".jpg")
+        label_path = os.path.join(label_dir, img_name + ".jpg")
+        #label = img_loader(label_path, "L")
+        
+        #gt_masks_tensor = torch.from_numpy(np.array(label)).float() / 255.0
+        #gt_masks_tensor = gt_masks_tensor.unsqueeze(0).to(device)
+
+        img = cv2.imread(img_path)
+        img = torch.from_numpy(img)
+        img = img.permute(2,0,1)
+        img_resize = transform(img)
+        img_stack[i] = img_resize.numpy().transpose(1,2,0)
+        img_stack = img_stack.astype(np.uint8)
+        
+        gt_mask = cv2.imread(label_path, cv2.IMREAD_GRAYSCALE)
+        gt_mask = torch.from_numpy(gt_mask)
+        gt_mask_resize = transform(gt_mask.unsqueeze(0))
+        gt_mask_stack[i] = gt_mask_resize.squeeze().numpy()
+        gt_mask_stack = gt_mask_stack.astype(np.uint8)
+    
+
+    policy_list = env._best_policy_list
+    validation_performance = []
+    
+    for p in policy_list:
+        mIoU_list = []
+        for i in range(img_stack.shape[0]):
+            obs = Policy(args, img_stack[i], p)
+            obs = cv2.cvtColor(obs, cv2.COLOR_BGR2RGB)
+            predictor.set_image(obs)
+            gt_mask = gt_mask_stack[i]
+            input_point = forward_point_cv2(gt_mask)
+            input_label = np.array([1])
+
+            pred_mask, _, _ = predictor.predict(
+            point_coords=input_point,
+            point_labels=input_label,
+            box=None,
+            multimask_output=False,
+            )
+
+            pred_masks_tensor = torch.from_numpy(pred_mask).to(device).float()
+            gt_masks_tensor = torch.from_numpy(gt_mask).float() / 255.0
+            gt_masks_tensor = gt_masks_tensor.unsqueeze(0).to(device)
+
+            IoU_cost = eval_gt_pred(gt_masks_tensor, pred_masks_tensor)
+
+            mIoU_list.append(IoU_cost.cpu().numpy().item())
+        
+        validation_performance.append(np.mean(mIoU_list))
+        
+    print(validation_performance)
+    pdb.set_trace()
+    
+    
+    
+    
+    
 
     del model # remove to demonstrate saving and loading
 

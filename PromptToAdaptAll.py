@@ -13,7 +13,7 @@ class Prompt2AdaptAll(gym.Env):
     def __init__(self, ori_images_stack, gt_mask_stack, predictor, device, mode, args):
         self.args = args
         self.observation_space = spaces.Box(0, 255, shape=(1024, 1024, 3), dtype=np.uint8)  #TODO: What is your observation space
-        self.action_space = spaces.MultiDiscrete([16,10,16,10,16,10])
+        self.action_space = spaces.MultiDiscrete([18,10,18,10,18,10])
         self._image_stack = ori_images_stack #should be resized numpy image stack BGR 10 * 1024 * 1024 * 3  0-255
         self._gt_mask_stack = gt_mask_stack #should be resized numpy gt mask stack BGR 10 * 1024 * 1024  0-255
         self._random_int = np.random.randint(0, self._image_stack.shape[0])
@@ -86,8 +86,8 @@ class Prompt2AdaptAll(gym.Env):
                 self._adapted_image = self._image_stack[i]
 
                 self._adapted_image = Policy(self.args, self._adapted_image, self._policy_dict)
-                self._adapted_image = cv2.cvtColor(self._adapted_image, cv2.COLOR_BGR2RGB)
-                self._predictor.set_image(self._adapted_image)
+                image_for_predictor = cv2.cvtColor(self._adapted_image, cv2.COLOR_BGR2RGB)
+                self._predictor.set_image(image_for_predictor)
                 gt_mask = self._gt_mask_stack[i]
                 input_point = forward_point_cv2(gt_mask)
                 input_label = np.array([1])
@@ -116,8 +116,8 @@ class Prompt2AdaptAll(gym.Env):
             #self._policy_dict = [{0: {'op': 'contrast_down', 'magnitude': 8}}, {0: {'op': 'saturation_down', 'magnitude': 8}}, {0: {'op': 'gaussianBlur', 'magnitude': 2}}]
             #just for test
             self._adapted_image = Policy(self.args, self._adapted_image, self._policy_dict)
-            self._adapted_image = cv2.cvtColor(self._adapted_image, cv2.COLOR_BGR2RGB)
-            self._predictor.set_image(self._adapted_image)
+            image_for_predictor = cv2.cvtColor(self._adapted_image, cv2.COLOR_BGR2RGB)
+            self._predictor.set_image(image_for_predictor)
             gt_mask = self._gt_mask_stack[self._random_int]
             input_point = forward_point_cv2(gt_mask)
             input_label = np.array([1])
@@ -147,7 +147,7 @@ class Prompt2AdaptAll(gym.Env):
         else:
             raise NameError("PleaseSetCorrectModeName")
            
-        if((len(self._best_mIoU_list) == self.args.save_policy_len) and (reward < self._best_mIoU_list[-1]) and ( reward in self._best_mIoU_list)):
+        if(((len(self._best_mIoU_list) == self.args.save_policy_len) and (reward < self._best_mIoU_list[-1])) or ( reward in self._best_mIoU_list) or ( self._policy_dict in self._best_policy_list)):
             pass
         else:
             self._best_mIoU_list.append(reward)

@@ -9,6 +9,7 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 
+from IPTfunc import IPTdenoise, IPTderain
 
 def Policy(args, img, policy_dict):
     if policy_dict == None:
@@ -51,6 +52,10 @@ def Policy(args, img, policy_dict):
             img = bilateralFilter(img, magnitude_1)
         elif op_1 == "medianBlur":
             img = medianBlur(img, magnitude_1)
+        elif op_1 == "IPTdenoise":
+            img = IPTdenoise(img, magnitude_1) #magnitude here is noise level added before denoise
+        elif op_1 == "IPTderain":
+            img = IPTderain(img, magnitude_1) #useless magnitude
 
     return img
 
@@ -264,6 +269,7 @@ def log(c,img):
     output=np.uint8(output+0.5)
     return output
 
+
 def get_sub_policies(augment_id_list, magnitude_id_list, args):
     policies = []
     for n in range(args.subpolicy_num):    
@@ -275,3 +281,11 @@ def get_sub_policies(augment_id_list, magnitude_id_list, args):
             sub_policy[i] = policy
         policies.append(sub_policy)
     return policies
+
+
+if __name__ == '__main__':
+    img = cv2.imread("rain.png")
+    
+    imgDenoise = IPTderain(img = img, magnitude = 0)
+    
+    cv2.imwrite("Derain.jpg", imgDenoise)

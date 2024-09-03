@@ -12,7 +12,7 @@ def get_args():
     parser.add_argument('--val_txt', type=str, default='./dataset/Kvasir-SEG/Kavsir_val.txt')
     
     # search space
-    parser.add_argument('--augment_types', type=list, default=['brightness_up', 'brightness_down', 'contrast_up', 'contrast_down', 'saturation_up', 'saturation_down', 'boxFilter', 'gaussianBlur', 'logGray', 'gamma_corrected', 'meanBlur', 'sharpen_lowpass', 'sharpen_gaussian', 'sharpen_lap', 'bilateralFilter', 'medianBlur'
+    parser.add_argument('--augment_types', type=list, default=['brightness_up', 'brightness_down', 'contrast_up', 'contrast_down', 'saturation_up', 'saturation_down', 'boxFilter', 'gaussianBlur', 'logGray', 'gamma_corrected', 'meanBlur', 'sharpen_lowpass', 'sharpen_gaussian', 'sharpen_lap', 'bilateralFilter', 'medianBlur', 'IPTdenoise', 'IPTderain'
                                             ], help='all searched policies')
     parser.add_argument('--magnitude_types', type=list, default=range(10))
     parser.add_argument('--prob_types', type=list, default=range(11))
@@ -34,16 +34,15 @@ def get_args():
     parser.add_argument('--seed', type=int, default=2)
     parser.add_argument('--mode', type=str, default='train')
     parser.add_argument('--search_epochs', type=int, default=1500)  # 1500
-    parser.add_argument('--save_policy_len', type=int, default=10)  # 1500
-    parser.add_argument('--val_epoch', type=int, default=10)  # 1500
+    parser.add_argument('--save_policy_len', type=int, default=20)  # 1500
+    parser.add_argument('--val_epoch', type=int, default=50)  # 1500
     
     #stable baseline 3
     parser.add_argument('--sb3_lr', type=float, default=0.0005)
-    parser.add_argument('--sb3_batchsize', type=int, default=64)
-    parser.add_argument('--n_steps', type=int, default=512)
-    parser.add_argument('--total_timesteps', type=int, default=50000)
+    parser.add_argument('--sb3_batchsize', type=int, default=2)
+    parser.add_argument('--n_steps', type=int, default=2)
+    parser.add_argument('--total_timesteps', type=int, default=1500)
     parser.add_argument('--sb3_checkpoint', type=str, default=None)
-
 
     # SAM
     parser.add_argument(
@@ -145,7 +144,7 @@ def get_args():
     )
     arguments = parser.parse_args()
     print(arguments)
-    return arguments
+    return argumentss
 
 
 
